@@ -1,0 +1,73 @@
+.data
+
+message1: .byte 'a'
+message2: .byte 'd'
+message3: .asciiz "Hello\n"
+message4: .asciiz "Tei\n"
+number5: .word 5
+userInput: .space 50
+give: .asciiz "\nEnter: \n"
+
+.text
+.globl  main
+main:
+
+#load byte and print the character
+lb $a0, message1 
+li $v0, 11
+syscall
+
+lb $a0, message2
+li $v0, 11
+syscall
+
+la $a0, message3
+li $v0, 4
+syscall
+
+la $a0, message4
+li $v0, 4
+syscall
+
+
+#print a number
+li $v0, 1
+lw $a0, number5
+syscall
+
+#just enter
+la $a0, give
+li $v0, 4
+syscall
+
+#getting users input
+li $v0, 5 
+syscall
+
+#moving the integer input to another register
+move $t0, $v0
+
+#print it
+li $v0,1
+move $a0, $t0
+syscall
+
+#just enter
+la $a0, give
+li $v0, 4
+syscall
+
+#getting the users input
+li $v0, 8
+la $a0, userInput
+li $a1, 50 
+syscall
+
+#display the name
+li $v0, 4
+la $a0, userInput
+syscall
+
+#end 
+li $v0, 10
+syscall
