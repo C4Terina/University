@@ -1,0 +1,51 @@
+#Εργαστήριο ΛΣ 1/ Άσκηση 2 / 2020-21
+
+#
+#----------------------------------------
+#
+#ΔΕΥΤΕΡΟ SCRIPT ΕΡΩΤΗΣΗΣ 4
+
+#!/bin/bash
+
+#Αντιστοιχώ τα ορίσματα στις κατάλληλες μεταβλητές 
+username=$1
+arg2=$2
+arg3=$3
+
+if [[ $username = "" || $arg2 = "" || $arg3 = "" ]]; then #Αν ένα από τα 3 είναι ίσο με το κενό τότε ο χρήστης δεν έχει δώσει αρκετά arguments
+	echo "Insufficient arguments"
+	exit 1
+fi
+
+var=$(who | egrep -c "$username") #Αν ο χρήστης υπάρχει το var=1 αν όχι τότε var=0 
+if ((var == 0)); then
+	echo "User not found"
+	exit 1
+fi
+
+var1=$(find /home/$username -name $arg2)
+if [ -f  $var1 ]
+then 
+    echo "It's a file"
+elif [ -d  $var1 ]
+then
+    echo "It's a directory"
+else
+    echo "This file/directory doesn't exist on this user"
+    exit 1
+fi
+
+echo "When do you want the backup to happen?"
+read time
+
+var2=$(find -name $arg3)
+if [ -f ${arg3} ]
+then 
+    at -t $time tar -rvf $var2 $var1 
+elif [ -d ${arg3} ]
+then
+    at -t $time tar -cvf $var2/backup $var1 
+else
+    echo "This file/directory doesn't exist"
+    exit 1
+fi 

@@ -1,0 +1,80 @@
+#Εργαστήριο ΛΣ 1/ Άσκηση 2 / 2020-21
+
+#
+#----------------------------------------
+#
+#Σε μια εφαρμογή χρειάζεται να δημιουργούμε νέους καταλόγους τους οποίους θα βρίσκει και θα χρησιμοποιεί. 
+#Γράψτε ένα script με  όνομα createpvsτο  οποίο  θα  καλείται  με  παραμέτρους ROOTFOLDER, no_of_DBFOLDERS, no_of_DATAFOLDERS, USERNAME
+#π.χ.createpvs /etc/data 0 5 user555το οποίο θα κάνει τα ακόλουθα:
+#Θα ελέγχει τον αριθμό των ορισμάτων ώστε να είναι 4
+#Θα  ελέγχει  αν  υπάρχει  ο  ROOTFOLDER  μέσα  στον  οποίο  θα  δημιουργηθούν  οι  νέοι κατάλογοι
+#Θα ελέγχει αν υπάρχει ο χρήστης USERNAME (μέσα στο αρχείο /etc/passwd)
+#Αν όλοι οι έλεγχοι είναι επιτυχείς:
+#Θα  δημιουργεί  τόσους  υποφακέλους  με  όνομα  dbfolderΝ  μέσα  στον  ROOTFOLDER όσους υποδεικνύειτο νούμερο no_of_DBFOLDERS και με τέτοιο τρόποώστε να μην κάνει  “overwrite”  υφιστάμενους  φακέλους.
+#Π.χ.  αν  ο  τελευταίος  φάκελος που  είχε δημιουργηθεί από προηγούμενη εκτέλεση είναι ο dbfolder18 και θέλουμε 6 νέους, θα πρέπει  να  δημιουργήσει  τους  dbfolder19,  dbfolder20,...,dbfolder24  
+#αν  η  παράμετρος είναι 0 δεν θα πρέπει να δημιουργήσει κανέναν).-To ίδιο θα πρέπει να ισχύει (δηλαδή να δημιουργούνται χωρίς “overwrite”) και για τους υποφακέλους datafolderN που καθορίζονται από το no_of_DATAFOLDERS.
+#Μετά την δημιουργία των φακέλων, θα χρησιμοποιεί την εντολή chown ώστε να δώσει την κυριότητα των νέων φακέλων στον χρήστη USERNAME.
+#
+#Απάντηση:
+#!/bin/bash
+
+#Αντιστοιχώ τα ορίσματα στις κατάλληλες μεταβλητές τους
+ROOTFOLDER=$1
+no_of_DBFOLDER=$2
+no_of_DATAFOLDER=$3
+USERNAME=$4
+i=0
+
+#Έλεγχοι
+if [[ $ROOTFOLDER = "" || $no_of_DBFOLDER = "" || $no_of_DATAFOLDER = "" || $USERNAME = ""  ]]; then 
+	echo "Invalid entry"
+	exit 1
+fi
+
+if [ ! -d "$ROOTFOLDER" ]; then
+	echo "This folder doesn't exist"
+	exit 1
+fi
+
+res=$(egrep -c "^$USERNAME:" /etc/passwd) #Το -c βγάζει 1 ή 0, αληθής ή ψευδής αντίστοιχα
+
+if (($res == 0)); then
+	echo "This user doesn't exist"
+	exit 1
+fi
+
+
+cd $ROOTFOLDER
+var1=$(ls -la | egrep -c "dbfolder") #Βρίσκω πόσα αρχεία υπάρχουν με το όνομα "dbfolder" και το αποθηκεύω στο var1
+var2=$((var1+no_of_DBFOLDER)) 
+
+if (($var1 == 0)); then #Αν το var=0 δηλαδή αν δεν υπάρχουν φάκελοι με όνομα dbfolder τότε θα αρχίσει απο το 0 δηλαδή από τον dbfolder0
+	for (( i=0; i<$var2; i++)); do
+		mkdir dbfolder$i
+		chown $USERNAME dbfolder$i
+	done
+else
+	for (( i=$var1; i<$var2; i++)); do 
+		mkdir dbfolder$i
+		chown $USERNAME dbfolder$i
+	done
+fi
+
+var3=$(ls -la | egrep -c "datafolder") 
+var4=$((var1+no_of_DATAFOLDER))
+
+if (($var1 == 0)); then #Ομοίως
+	for (( i=0; i<$var4; i++)); do
+		mkdir datafolder$i
+		chown $USERNAME datafolder$i
+	done
+else
+	for (( i=$var3; i<$var4; i++)); do
+		mkdir datafolder$i
+		chown $USERNAME datafolder$i
+	done
+fi
+
+#Τα chown δεν δουλεύουν σε όλες τις περιπτώσεις. Για να δουλέψει πρέπει ή να είμαστε root του ΛΣ ή να βάλουμε ένα sudo μπροστά. 
+
+	
